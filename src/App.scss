@@ -1,0 +1,68 @@
+html,
+body {
+  font-family: Roboto, Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+}
+
+#root {
+  margin: 2rem auto;
+  padding: 1rem;
+  width: 70vw;
+}
+
+main {
+  padding: 1rem;
+  margin: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+h1 {
+  text-align: center;
+}
+
+p {
+  margin-bottom: 0;
+}
+
+a {
+  text-decoration: none;
+  color: darkcyan;
+}
+
+.star {
+  display: inline-block;
+  height: 3rem;
+}
+
+.item {
+  padding: 0.2rem;
+}
+
+#root .progress {
+  height: 0.6rem;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+@media screen and (width <= 1024px) {
+  #root {
+      width: 70vw;
+  }
+
+  main {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media screen and (width <= 640px) {
+    #root {
+        width: 90vw;
+    }
+
+    main {
+      grid-template-columns: 1fr;
+    }
+}
