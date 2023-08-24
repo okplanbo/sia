@@ -19,6 +19,10 @@ main {
 
 h1 {
   text-align: center;
+
+  > div {
+    display: initial;
+  }
 }
 
 p {
@@ -28,11 +32,6 @@ p {
 a {
   text-decoration: none;
   color: darkcyan;
-}
-
-.star {
-  display: inline-block;
-  height: 3rem;
 }
 
 .item {

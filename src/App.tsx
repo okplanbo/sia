@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Paper, Tooltip, FormControlLabel, Checkbox, 
-    Typography, LinearProgress } from "@mui/material";
+    Typography, LinearProgress, Button, Box } from "@mui/material";
+
+import { basicList, storage_key, total_percent } from ":src/constants";
 
 import "./App.scss";
 
@@ -9,38 +11,6 @@ type Task = {
     description: string;
     checked: boolean;
 };
-
-const basicList = [
-    'Open to-do list',
-    'Make a bed',
-    'Brush teeth',
-    'Wordle',
-    'Stretch, push-ups',
-    'Cold shower',
-    'Glass of water',
-    'Brush hair',
-    'Breakfast',
-    'Leetcode challenge',
-    'Work smart, not hard',
-    'Check exchange rates',
-    'Finance management',
-    'Eat a fruit',
-    'Talk to a friend',
-    'Tasty lunch',
-    'Take a selfie',
-    'Cardio 8\'000 steps',
-    'Check email & reply',
-    'Read an article, book',
-    'Relax and rest',
-    'Podcast',
-    'Dinner',
-    'Wash dishes',
-    'Brush teeth before bed',
-    '23:00 - go to sleep',
-];
-
-const total_percent = 100;
-const storage_key = 'SIA_TASKS_STATE';
 
 const initialTasks: Task[] = basicList.map(description => {
     return { description, checked: false }
@@ -63,22 +33,33 @@ export default function App(): JSX.Element {
     const [tasks, setTasks] = useState<Task[]>(saved_tasks ? JSON.parse(saved_tasks) : initialTasks);
     const [progress, setProgress] = useState(calcProgress(tasks));
 
-    const toggleTask = (index: number) => {
-        const newTasks = [...tasks];
-        newTasks[index].checked = !newTasks[index].checked;
+    const updateTasks = (newTasks: Task[]) => {
         localStorage.setItem(storage_key, JSON.stringify(newTasks));
         setTasks(newTasks);
         setProgress(calcProgress(newTasks));
+    }
+
+    const toggleTask = (index: number) => {
+        const newTasks = [...tasks];
+        newTasks[index] = {...newTasks[index], checked: !newTasks[index].checked};
+        updateTasks(newTasks);
     };
+
+    const restartHandler = useCallback(() => {
+        const newTasks = initialTasks;
+        updateTasks(newTasks);
+    }, []);
 
     return (
         <>
             <Typography variant="h2" component="h1" align="center">
-                Sia
-                <Tooltip title="is Georgian for 'List'">
-                    <span className="star">
-                        *
-                    </span>
+                <Tooltip
+                    title="is Georgian for 'List'"
+                    placement="right-start"
+                >
+                    <div>
+                        Sia*
+                    </div>
                 </Tooltip>
             </Typography>
             <Paper variant="outlined" component="main">
@@ -96,6 +77,9 @@ export default function App(): JSX.Element {
                     />
                 ))}
             </Paper>
+            <Box display="flex" justifyContent="center">
+                <Button variant="outlined" sx={{fontWeight: 600}} onClick={restartHandler}>Restart the day</Button>
+            </Box>
             <LinearProgress variant="determinate" value={progress} className="progress" />
         </>
     );
