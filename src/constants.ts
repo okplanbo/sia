@@ -1,3 +1,4 @@
+/*eslint no-magic-numbers: "off"*/
 export const basicList = [
     "Open to-do list",
     "Make a bed",
@@ -24,7 +25,9 @@ export const basicList = [
     "Dinner",
     "Wash dishes",
     "Brush teeth before bed",
+    "Put phone to charge",
     "23:00 - go to sleep",
 ];
 export const storage_key = "SIA_TASKS_STATE";
 export const total_percent = 100;
+export const tooptip_offset = [45, -10];
