@@ -36,6 +36,14 @@ a {
 
 .item {
   padding: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #root .progress {

@@ -28,6 +28,8 @@ export const basicList = [
     "Put phone to charge",
     "23:00 - go to sleep",
 ];
-export const storage_key = "SIA_TASKS_STATE";
+export const storage_key = "SIA_TASKS_STATE_V2";
 export const total_percent = 100;
 export const tooptip_offset = [45, -10];
+export const task_input_limit = 45;
+export const debounce_delay = 300;
