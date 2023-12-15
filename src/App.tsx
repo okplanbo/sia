@@ -9,17 +9,11 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTheme } from '@mui/material/styles';
 
-import { debounce } from ":src/helpers";
-import { basicList, debounce_delay, storage_key,
-    task_input_limit, tooptip_offset, total_percent } from ":src/constants";
+import { Task } from ":src/types";
+import { calcProgress, debounce } from ":src/helpers";
+import { basicList, debounce_delay, storage_key, task_input_limit, tooptip_offset } from ":src/constants";
 
 import "./App.scss";
-
-type Task = {
-    description: string;
-    checked: boolean;
-    key: string;
-};
 
 function getInitialTasks() {
     const initialTasks: Task[] = basicList.map(description => {
@@ -31,25 +25,15 @@ function getInitialTasks() {
 
 const saved_tasks = localStorage.getItem(storage_key);
 
-const calcProgress = (tasks: Task[]) => {
-    let completedCount = 0;
-    tasks.forEach(item => {
-        if (item.checked) {
-            completedCount++;
-        }
-    });
-    return total_percent / basicList.length * completedCount;
-}
-
 export default function App(): JSX.Element {
     const [tasks, setTasks] = useState<Task[]>(saved_tasks ? JSON.parse(saved_tasks) : getInitialTasks());
     const [editedTasks, setEditedTasks] = useState<Task[]>([]);
     const [progress, setProgress] = useState(calcProgress(tasks));
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const addButtonRef = useRef<HTMLButtonElement>(null);
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-    const addButtonRef = useRef<HTMLButtonElement>(null);
   
     const updateTasks = (newTasks: Task[]) => {
         localStorage.setItem(storage_key, JSON.stringify(newTasks));
@@ -62,6 +46,16 @@ export default function App(): JSX.Element {
         newTasks[index] = {...newTasks[index], checked: !newTasks[index].checked};
         updateTasks(newTasks);
     }, [tasks]);
+
+    const debouncedUpdate = debounce((newDescription: string, key: string) => {
+        const tasks = editedTasks.map(task => {
+            if (task.key === key) {
+                task.description = newDescription;
+            }
+            return task;
+        });
+        setEditedTasks(tasks);
+    }, debounce_delay);
 
     const handleRestart = useCallback(() => {
         const newTasks = tasks.slice();
@@ -103,16 +97,6 @@ export default function App(): JSX.Element {
         const newTasks = editedTasks.filter(task => task.description);
         updateTasks(newTasks);
     };
-
-    const debouncedUpdate = debounce((newDescription: string, key: string) => {
-        const tasks = editedTasks.map(task => {
-            if (task.key === key) {
-                task.description = newDescription;
-            }
-            return task;
-        });
-        setEditedTasks(tasks);
-    }, debounce_delay);
 
     const handleTaskEdit = (value: string, key: string) => {
         debouncedUpdate(value, key);
