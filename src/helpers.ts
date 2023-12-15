@@ -1,3 +1,6 @@
+import { Task } from "./types";
+import { total_percent } from "./constants";
+
 export function debounce<T extends (...args: string[]) => void>(fn: T, time: number) {
     let timeoutId: NodeJS.Timeout | null;
     return wrapper
@@ -10,4 +13,14 @@ export function debounce<T extends (...args: string[]) => void>(fn: T, time: num
             fn(...args)
         }, time)
     }
+}
+
+export function calcProgress (tasks: Task[]) {
+    let completedCount = 0;
+    tasks.forEach(item => {
+        if (item.checked) {
+            completedCount++;
+        }
+    });
+    return total_percent / tasks.length * completedCount;
 }
