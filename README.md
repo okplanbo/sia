@@ -14,5 +14,4 @@ yarn install
 - React
 - TS
 - MUI
-
-+ Modern Normalize, Stylelint, ESlint
+- Modern Normalize, Stylelint, ESlint

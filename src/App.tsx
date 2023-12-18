@@ -1,5 +1,7 @@
 import { useCallback, useState, useRef } from "react";
 import { v4 as uuidv4 } from 'uuid';
+import type { DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 
 import { Paper, Tooltip, FormControlLabel, Checkbox, Dialog, DialogActions,
     DialogContent, DialogContentText, DialogTitle, Typography, LinearProgress,
@@ -7,10 +9,12 @@ import { Paper, Tooltip, FormControlLabel, Checkbox, Dialog, DialogActions,
 
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ClearIcon from '@mui/icons-material/Clear';
+import DragIcon from '@mui/icons-material/DragIndicator';
 import { useTheme } from '@mui/material/styles';
 
 import { Task } from ":src/types";
-import { calcProgress, debounce } from ":src/helpers";
+import { calcProgress, debounce, reorder, vibrate } from ":src/helpers";
 import { basicList, debounce_delay, storage_key, task_input_limit, tooptip_offset } from ":src/constants";
 
 import "./App.scss";
@@ -45,6 +49,7 @@ export default function App(): JSX.Element {
         const newTasks = [...tasks];
         newTasks[index] = {...newTasks[index], checked: !newTasks[index].checked};
         updateTasks(newTasks);
+        vibrate();
     }, [tasks]);
 
     const debouncedUpdate = debounce((newDescription: string, key: string) => {
@@ -72,8 +77,8 @@ export default function App(): JSX.Element {
         setIsConfirmOpen(false);
     };
 
-    const handleEdit = () => {
-        setEditedTasks(tasks.slice());
+    const handleStartEdit = () => {
+        setEditedTasks(JSON.parse(JSON.stringify(tasks)));
         setIsEditDialogOpen(true);
     };
 
@@ -106,6 +111,29 @@ export default function App(): JSX.Element {
         const tasks = editedTasks.filter(task => task.key !== key);
         setEditedTasks(tasks);
     };
+
+    const onDragStart = () => {
+        vibrate();
+    }
+
+    const handleClearTasks = () => {
+        setEditedTasks([]);
+    }
+
+    const onDragEnd = (result: DropResult) => {
+        if (!result.destination) {
+            return; // dropped outside the list
+        }
+        if (result.destination.index === result.source.index) {
+            return;
+        }
+        const items = reorder(
+            editedTasks,
+            result.source.index,
+            result.destination.index,
+        );
+        setEditedTasks(items);
+    }
 
     return (
         <>
@@ -164,7 +192,7 @@ export default function App(): JSX.Element {
 
             <Box display="flex" justifyContent="center" marginTop="2rem">
                 <Box display="flex" marginRight="2rem">
-                    <Button variant="outlined" onClick={handleEdit}>
+                    <Button variant="outlined" onClick={handleStartEdit}>
                         Edit
                     </Button>
                 </Box>
@@ -184,39 +212,83 @@ export default function App(): JSX.Element {
                 aria-labelledby="responsive-dialog-title"
             >
                 <DialogTitle id="responsive-dialog-title">
-                    Edit tasks
-                </DialogTitle>
+                    <Box display="flex" justifyContent="space-between">
+                        Edit tasks
+                        <Button
+                            variant="outlined"
+                            disabled={editedTasks.length === 0}
+                            endIcon={<ClearIcon />}
+                            onClick={handleClearTasks}
+                        >
+                            Clear all
+                        </Button>
+                    </Box>
+                </DialogTitle>  
                 <DialogContent sx={ fullScreen ? undefined : { minWidth: '500px'}}>
+                
                     <Box
                         display="flex"
                         flexDirection="column"
                         marginBottom="1rem"
                     >
-                        {editedTasks.map(item =>
-                            <Box key={item.key} display="flex">
-                                <Input
-                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                        handleTaskEdit(event.target.value, item.key)
-                                    }}
-                                    defaultValue={item.description}
-                                    fullWidth
-                                    sx={{ marginBottom: "0.5rem" }}
-                                    inputProps={{
-                                        'aria-label': 'Task description',
-                                        maxLength: task_input_limit
-                                    }}
-                                />
-                                <IconButton
-                                    aria-label="delete"
-                                    size="medium"
-                                    onClick={() => {
-                                        handleDeleteTask(item.key)
-                                    }}
-                                >
-                                    <DeleteIcon fontSize="medium" />
-                                </IconButton>
-                            </Box>
-                        )}
+                        <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+                            <Droppable droppableId="droppable">
+                                {(provided) => (
+                                    <div
+                                        {...provided.droppableProps}
+                                        ref={provided.innerRef}
+                                        // style={getListStyle(snapshot.isDraggingOver)}
+                                    >
+                                        {editedTasks.map((item, index) => (
+                                            <Draggable key={item.key} draggableId={item.key} index={index}>
+                                                {(provided) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        // style={getItemStyle(
+                                                        //     snapshot.isDragging,
+                                                        //     provided.draggableProps.style
+                                                        // )}
+                                                    >
+                                                        <Box key={item.key} display="flex">
+                                                            <Input
+                                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                                                    handleTaskEdit(event.target.value, item.key)
+                                                                }}
+                                                                defaultValue={item.description}
+                                                                fullWidth
+                                                                sx={{ marginBottom: "0.5rem" }}
+                                                                inputProps={{
+                                                                    'aria-label': 'Task description',
+                                                                    maxLength: task_input_limit
+                                                                }}
+                                                            />
+                                                            <IconButton
+                                                                aria-label="delete"
+                                                                size="medium"
+                                                                onClick={() => {
+                                                                    handleDeleteTask(item.key)
+                                                                }}
+                                                            >
+                                                                <DeleteIcon fontSize="medium" />
+                                                            </IconButton>
+                                                            <IconButton
+                                                                aria-label="reorder"
+                                                                size="medium"
+                                                            >
+                                                                <DragIcon fontSize="medium" />
+                                                            </IconButton>
+                                                        </Box>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder}
+                                    </div>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
                         <Button
                             variant="outlined"
                             startIcon={<AddIcon />}

@@ -14,7 +14,7 @@ module.exports = {
     rules: {
         "react/jsx-boolean-value": "error",
         "react-refresh/only-export-components": "warn",
-        "no-magic-numbers": ["error", { "ignore": [0] }],
+        "no-magic-numbers": ["error", { "ignore": [0, 1] }],
         "@typescript-eslint/no-explicit-any": "error",
         indent: ["error", 4, { SwitchCase: 1 }],
     },

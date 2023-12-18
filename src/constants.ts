@@ -33,3 +33,4 @@ export const total_percent = 100;
 export const tooptip_offset = [45, -10];
 export const task_input_limit = 45;
 export const debounce_delay = 300;
+export const vibrate_duration = 100;
