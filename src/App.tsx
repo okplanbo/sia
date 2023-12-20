@@ -135,6 +135,61 @@ export default function App(): JSX.Element {
         setEditedTasks(items);
     }
 
+    const EditableList = (
+        <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+            <Droppable droppableId="droppable">
+                {(provided) => (
+                    <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                    >
+                        {editedTasks.map((item, index) => (
+                            <Draggable key={item.key} draggableId={item.key} index={index}>
+                                {(provided) => (
+                                    <Box
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        key={item.key} display="flex"
+                                    >
+                                        <Input
+                                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                                handleTaskEdit(event.target.value, item.key)
+                                            }}
+                                            defaultValue={item.description}
+                                            fullWidth
+                                            sx={{ marginBottom: "0.5rem" }}
+                                            inputProps={{
+                                                'aria-label': 'Task description',
+                                                maxLength: task_input_limit
+                                            }}
+                                        />
+                                        <IconButton
+                                            aria-label="delete"
+                                            size="medium"
+                                            onClick={() => {
+                                                handleDeleteTask(item.key)
+                                            }}
+                                        >
+                                            <DeleteIcon fontSize="medium" />
+                                        </IconButton>
+                                        <IconButton
+                                            aria-label="reorder"
+                                            size="medium"
+                                            {...provided.dragHandleProps}
+                                        >
+                                            <DragIcon fontSize="medium" />
+                                        </IconButton>
+                                    </Box>
+                                )}
+                            </Draggable>
+                        ))}
+                        {provided.placeholder}
+                    </div>
+                )}
+            </Droppable>
+        </DragDropContext>
+    );
+
     return (
         <>
             <Typography
@@ -225,70 +280,12 @@ export default function App(): JSX.Element {
                     </Box>
                 </DialogTitle>  
                 <DialogContent sx={ fullScreen ? undefined : { minWidth: '500px'}}>
-                
                     <Box
                         display="flex"
                         flexDirection="column"
                         marginBottom="1rem"
                     >
-                        <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-                            <Droppable droppableId="droppable">
-                                {(provided) => (
-                                    <div
-                                        {...provided.droppableProps}
-                                        ref={provided.innerRef}
-                                        // style={getListStyle(snapshot.isDraggingOver)}
-                                    >
-                                        {editedTasks.map((item, index) => (
-                                            <Draggable key={item.key} draggableId={item.key} index={index}>
-                                                {(provided) => (
-                                                    <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                        // style={getItemStyle(
-                                                        //     snapshot.isDragging,
-                                                        //     provided.draggableProps.style
-                                                        // )}
-                                                    >
-                                                        <Box key={item.key} display="flex">
-                                                            <Input
-                                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                                                    handleTaskEdit(event.target.value, item.key)
-                                                                }}
-                                                                defaultValue={item.description}
-                                                                fullWidth
-                                                                sx={{ marginBottom: "0.5rem" }}
-                                                                inputProps={{
-                                                                    'aria-label': 'Task description',
-                                                                    maxLength: task_input_limit
-                                                                }}
-                                                            />
-                                                            <IconButton
-                                                                aria-label="delete"
-                                                                size="medium"
-                                                                onClick={() => {
-                                                                    handleDeleteTask(item.key)
-                                                                }}
-                                                            >
-                                                                <DeleteIcon fontSize="medium" />
-                                                            </IconButton>
-                                                            <IconButton
-                                                                aria-label="reorder"
-                                                                size="medium"
-                                                            >
-                                                                <DragIcon fontSize="medium" />
-                                                            </IconButton>
-                                                        </Box>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
-                                    </div>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
+                        { EditableList }
                         <Button
                             variant="outlined"
                             startIcon={<AddIcon />}
